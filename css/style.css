@@ -530,15 +530,3 @@ body {
         gap: 1.5rem;
     }
 }
-
-/* Scroll reveal animation */
-.reveal {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: var(--transition);
-}
-
-.reveal.active {
-    opacity: 1;
-    transform: translateY(0);
-}
