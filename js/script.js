@@ -10,43 +10,58 @@ document.addEventListener('DOMContentLoaded', function () {
     const navbar = document.getElementById('mainNavbar'); // Asegúrate de que tu <nav> tenga id="mainNavbar"
 
     // --- FUNCIÓN PRINCIPAL PARA CARGAR DATOS ---
-    // En tu script.js
     async function cargarDatos() {
+        // Muestra un indicador de carga mientras se obtienen los datos
         productosContainer.innerHTML = '<div class="loading"></div>'; 
 
         try {
+            // 1. Hacemos las dos peticiones a la API al mismo tiempo para más eficiencia
             const [responseProductos, responseCategorias] = await Promise.all([
                 fetch(`${API_URL}/productos`),
                 fetch(`${API_URL}/categorias`)
             ]);
 
+            // Verificamos si las respuestas de la API son correctas
             if (!responseProductos.ok || !responseCategorias.ok) {
+                // Si alguna respuesta es 404 o cualquier otro error, lanzamos una excepción.
                 throw new Error('Error al comunicar con la API.');
             }
 
             const productos = await responseProductos.json();
             const categorias = await responseCategorias.json();
 
+            // --- INICIO DE DEPURACIÓN ---
+            // Mostramos en consola lo que realmente estamos recibiendo de la API.
+            console.log("Datos recibidos de /categorias:", categorias);
+            console.log("Datos recibidos de /productos:", productos);
+            // --- FIN DE DEPURACIÓN ---
+
             // Si no hay productos, mostramos un mensaje y detenemos la ejecución.
             if (productos.length === 0) {
                 productosContainer.innerHTML = `<p class="text-center col-12">¡Pronto tendremos nuevos productos! Vuelve a visitarnos.</p>`;
-                generarBotonesFiltro([], []); 
-                return; 
+                generarBotonesFiltro([], []); // Genera solo el botón "Todos"
+                return; // Detiene la función aquí
             }
 
+            // 2. Creamos un mapa para buscar nombres de categoría por su ID fácilmente
             const mapaCategorias = new Map(categorias.map(cat => [cat._id, cat.nombre]));
 
+            // 3. Unimos los productos con los nombres de sus categorías
             const productosCompletos = productos.map(producto => ({
                 ...producto,
                 categoria: mapaCategorias.get(producto.categoriaId) || 'Sin Categoría',
                 imagen: producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`
             }));
             
-            // CORRECCIÓN: Quitamos esta línea.
-            // renderizarProductos('Todos', productosCompletos); 
+            // --- INICIO DE DEPURACIÓN ---
+            console.log("Productos con nombres de categoría (listos para mostrar):", productosCompletos);
+            // --- FIN DE DEPURACIÓN ---
 
-            // NUEVO: Pasa los productos procesados a la función de generación de botones
-            generarBotonesFiltro(categorias, productosCompletos); 
+            // 4. Generamos los botones de filtro dinámicamente
+            generarBotonesFiltro(categorias, productosCompletos);
+
+            // 5. Mostramos los productos en la página
+            renderizarProductos('Todos', productosCompletos);
 
         } catch (error) {
             console.error('Error al cargar datos:', error);
@@ -57,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- FUNCIONES PARA RENDERIZAR EL CONTENIDO ---
 
     // Genera los botones de filtro a partir de las categorías de la API
-   // En tu script.js
     function generarBotonesFiltro(categorias, productos) {
         let botonesHTML = '<button class="btn active" data-filter="Todos">Todos</button>';
         categorias.forEach(cat => {
@@ -65,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         filterButtonsContainer.innerHTML = botonesHTML;
 
+        // Volvemos a asignar los eventos a los nuevos botones
         document.querySelectorAll('.filter-buttons .btn').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelector('.filter-buttons .btn.active').classList.remove('active');
@@ -73,10 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 renderizarProductos(filtro, productos);
             });
         });
-
-        // CORRECCIÓN: Agregamos esta línea para que los productos se muestren al cargar la página
-        // por primera vez.
-        renderizarProductos('Todos', productos);
     }
 
     // Muestra los productos en la página con una animación
@@ -108,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const mensaje = encodeURIComponent(`¡Hola! Estoy interesado/a en el producto: ${producto.nombre}`);
         const whatsappLink = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${mensaje}`;
 
-        const imageUrl = producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`;
         return `
             <div class="product-card card-enter">
                 <div class="product-image">
