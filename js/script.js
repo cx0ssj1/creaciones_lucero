@@ -83,24 +83,61 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Muestra los productos en la página con una animación
-// En tu script.js
+    // --- FUNCIONES PARA RENDERIZAR EL CONTENIDO ---
     function renderizarProductos(filtro = 'Todos', productos = []) {
-        // Limpiamos el contenedor antes de agregar los nuevos productos
-        productosContainer.innerHTML = ''; 
+        // Si no se pasaron productos, mostramos un mensaje de "cargando" o "sin productos".
+        if (!productos || productos.length === 0) {
+            productosContainer.innerHTML = '<div class="loading"></div>';
+            return;
+        }
 
-        const productosFiltrados = productos.filter(p => filtro === 'Todos' || p.categoria === filtro);
+        // Filtramos los productos antes de renderizar
+        const productosFiltrados = productos.filter(p => filtro === 'Todos' || p.categoria === filtro);
 
-        if (productosFiltrados.length === 0) {
-            productosContainer.innerHTML = '<p class="text-center col-12">No hay productos en esta categoría.</p>';
-            return;
-        }
+        // Si no hay productos en la categoría filtrada, mostramos un mensaje
+        if (productosFiltrados.length === 0) {
+            productosContainer.innerHTML = '<p class="text-center col-12">No hay productos en esta categoría.</p>';
+            return;
+        }
 
-        // Agregamos las tarjetas de producto de forma directa y eficiente
-        let productosHTML = '';
-        productosFiltrados.forEach(producto => {
-            productosHTML += crearProductCard(producto);
-        });
-        productosContainer.innerHTML = productosHTML;
+        // Usamos un array para construir el HTML de manera eficiente
+        const productosHTML = productosFiltrados.map(producto => {
+            const mensaje = encodeURIComponent(`¡Hola! Estoy interesado/a en el producto: ${producto.nombre}`);
+            const whatsappLink = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${mensaje}`;
+            const imageUrl = producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`;
+
+            return `
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card card-enter">
+                        <div class="product-image">
+                            <img src="${imageUrl}" alt="${producto.nombre}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
+                            <div class="product-overlay">
+                                <button class="preview-btn" onclick="mostrarModal('${producto.nombre.replace(/'/g, "\\'")}', '${producto.descripcion.replace(/'/g, "\\'")}', '${imageUrl}')">
+                                    <i class="fas fa-eye me-2"></i>Vista previa
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <span class="category-badge">${producto.categoria}</span>
+                            <h5 class="card-title">${producto.nombre}</h5>
+                            <p class="card-text">${producto.descripcion}</p>
+                            <a href="${whatsappLink}" class="btn btn-whatsapp" target="_blank">
+                                <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Insertamos todo el HTML de una sola vez
+        productosContainer.innerHTML = productosHTML;
+
+        // Aquí puedes agregar un pequeño delay para la animación si lo deseas
+        // Por ejemplo:
+        // setTimeout(() => {
+        //     document.querySelectorAll('.product-card').forEach(card => card.classList.add('card-enter'));
+        // }, 100);
     }
 
     // Crea el HTML de una tarjeta de producto
