@@ -12,53 +12,53 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- FUNCIÓN PRINCIPAL PARA CARGAR DATOS ---
 // En tu script.js
     async function cargarDatos() {
-        // Muestra un indicador de carga mientras se obtienen los datos
-        productosContainer.innerHTML = '<div class="loading"></div>'; 
+        // Muestra un indicador de carga mientras se obtienen los datos
+        productosContainer.innerHTML = '<div class="loading"></div>'; 
 
-        try {
-            // 1. Hacemos las dos peticiones a la API al mismo tiempo para más eficiencia
-            const [responseProductos, responseCategorias] = await Promise.all([
-                fetch(`${API_URL}/productos`),
-                fetch(`${API_URL}/categorias`)
-            ]);
+        try {
+             // 1. Hacemos las dos peticiones a la API al mismo tiempo para más eficiencia
+            const [responseProductos, responseCategorias] = await Promise.all([
+                fetch(`${API_URL}/productos`),
+                fetch(`${API_URL}/categorias`)
+            ]);
 
-            // Verificamos si las respuestas de la API son correctas
-            if (!responseProductos.ok || !responseCategorias.ok) {
-                throw new Error('Error al comunicar con la API.');
-            }
+             // Verificamos si las respuestas de la API son correctas
+            if (!responseProductos.ok || !responseCategorias.ok) {
+                throw new Error('Error al comunicar con la API.');
+            }
 
-            const productos = await responseProductos.json();
-            const categorias = await responseCategorias.json();
+            const productos = await responseProductos.json();
+            const categorias = await responseCategorias.json();
 
-            console.log("Datos recibidos de /productos:", productos);
+            console.log("Datos recibidos de /productos:", productos);
 
-            // Si no hay productos, mostramos un mensaje y detenemos la ejecución.
-            if (productos.length === 0) {
-                productosContainer.innerHTML = `<p class="text-center col-12">¡Pronto tendremos nuevos productos! Vuelve a visitarnos.</p>`;
-                generarBotonesFiltro([]);
-                return;
-            }
+             // Si no hay productos, mostramos un mensaje y detenemos la ejecución.
+            if (productos.length === 0) {
+                productosContainer.innerHTML = `<p class="text-center col-12">¡Pronto tendremos nuevos productos! Vuelve a visitarnos.</p>`;
+                generarBotonesFiltro([]);
+                return;
+            }
 
-            // 2. Creamos un mapa para buscar nombres de categoría por su ID fácilmente
-            const mapaCategorias = new Map(categorias.map(cat => [cat._id, cat.nombre]));
+             // 2. Creamos un mapa para buscar nombres de categoría por su ID fácilmente
+            const mapaCategorias = new Map(categorias.map(cat => [cat._id, cat.nombre]));
 
-            // 3. Unimos los productos con los nombres de sus categorías
-            const productosCompletos = productos.map(producto => ({
-                ...producto,
-                categoria: mapaCategorias.get(producto.categoriaId) || 'Sin Categoría',
-                imagen: producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`
-            }));
-            
-            console.log("Productos con nombres de categoría (listos para mostrar):", productosCompletos);
+            // 3. Unimos los productos con los nombres de sus categorías
+            const productosCompletos = productos.map(producto => ({
+                ...producto,
+                categoria: mapaCategorias.get(producto.categoriaId.$oid) || 'Sin Categoría',
+                imagen: producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`
+            }));
 
-            // 4. Generamos los botones de filtro y renderizamos los productos iniciales
-            generarBotonesFiltro(categorias, productosCompletos);
-            renderizarProductos('Todos', productosCompletos);
+            console.log("Productos con nombres de categoría (listos para mostrar):", productosCompletos);
 
-        } catch (error) {
-            console.error('Error al cargar datos:', error);
-            productosContainer.innerHTML = `<p class="text-center col-12">Error al cargar los productos. Revisa que la API esté funcionando.</p>`;
-        }
+            // 4. Generamos los botones de filtro y renderizamos los productos iniciales
+            generarBotonesFiltro(categorias, productosCompletos);
+            renderizarProductos('Todos', productosCompletos);
+
+        } catch (error) {
+            console.error('Error al cargar datos:', error);
+            productosContainer.innerHTML = `<p class="text-center col-12">Error al cargar los productos. Revisa que la API esté funcionando.</p>`;
+        }
     }
 
     // --- FUNCIONES PARA RENDERIZAR EL CONTENIDO ---
@@ -84,73 +84,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Muestra los productos en la página con una animación
     // --- FUNCIONES PARA RENDERIZAR EL CONTENIDO ---
+    // En tu archivo 'script.js'
     function renderizarProductos(filtro = 'Todos', productos = []) {
-        // Si no se pasaron productos, mostramos un mensaje de "cargando" o "sin productos".
-        if (!productos || productos.length === 0) {
-            productosContainer.innerHTML = '<div class="loading"></div>';
-            return;
-        }
-
-        // Filtramos los productos antes de renderizar
+        productosContainer.innerHTML = '';
         const productosFiltrados = productos.filter(p => filtro === 'Todos' || p.categoria === filtro);
 
-        // Si no hay productos en la categoría filtrada, mostramos un mensaje
         if (productosFiltrados.length === 0) {
             productosContainer.innerHTML = '<p class="text-center col-12">No hay productos en esta categoría.</p>';
             return;
         }
 
-        // Usamos un array para construir el HTML de manera eficiente
-        const productosHTML = productosFiltrados.map(producto => {
-            const mensaje = encodeURIComponent(`¡Hola! Estoy interesado/a en el producto: ${producto.nombre}`);
-            const whatsappLink = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${mensaje}`;
-            const imageUrl = producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`;
-
-            return `
-                <div class="col-lg-4 col-md-6">
-                    <div class="product-card card-enter">
-                        <div class="product-image">
-                            <img src="${imageUrl}" alt="${producto.nombre}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
-                            <div class="product-overlay">
-                                <button class="preview-btn" onclick="mostrarModal('${producto.nombre.replace(/'/g, "\\'")}', '${producto.descripcion.replace(/'/g, "\\'")}', '${imageUrl}')">
-                                    <i class="fas fa-eye me-2"></i>Vista previa
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <span class="category-badge">${producto.categoria}</span>
-                            <h5 class="card-title">${producto.nombre}</h5>
-                            <p class="card-text">${producto.descripcion}</p>
-                            <a href="${whatsappLink}" class="btn btn-whatsapp" target="_blank">
-                                <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Insertamos todo el HTML de una sola vez
-        productosContainer.innerHTML = productosHTML;
-
-        // Aquí puedes agregar un pequeño delay para la animación si lo deseas
-        // Por ejemplo:
-        // setTimeout(() => {
-        //     document.querySelectorAll('.product-card').forEach(card => card.classList.add('card-enter'));
-        // }, 100);
+        productosFiltrados.forEach(producto => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'col-lg-4 col-md-6 mb-4'; // Añade 'mb-4' para el espaciado entre filas
+            cardElement.innerHTML = crearProductCard(producto);
+            productosContainer.appendChild(cardElement);
+        });
     }
 
     // Crea el HTML de una tarjeta de producto
     function crearProductCard(producto) {
         const mensaje = encodeURIComponent(`¡Hola! Estoy interesado/a en el producto: ${producto.nombre}`);
         const whatsappLink = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${mensaje}`;
+        const imageUrl = producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`;
+
+        // Maneja las comillas simples y dobles en el nombre y la descripción para evitar errores de sintaxis
+        const nombreLimpio = producto.nombre.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        const descripcionLimpia = producto.descripcion.replace(/'/g, "\\'").replace(/"/g, '\\"');
 
         return `
             <div class="product-card card-enter">
                 <div class="product-image">
-                    <img src="${producto.imagen}" alt="${producto.nombre}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
+                    <img src="${imageUrl}" alt="${producto.nombre}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
                     <div class="product-overlay">
-                        <button class="preview-btn" onclick="mostrarModal('${producto.nombre}', '${producto.descripcion}', '${producto.imagen}')">
+                        <button class="preview-btn" onclick="mostrarModal('${nombreLimpio}', '${descripcionLimpia}', '${imageUrl}')">
                             <i class="fas fa-eye me-2"></i>Vista previa
                         </button>
                     </div>
