@@ -103,13 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="product-card card-enter">
                         <div class="product-image">
-                            <img src="${imageUrl}" alt="${producto.nombre}"
-                                onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
-                            <div class="product-overlay">
-                                <button class="preview-btn" onclick="mostrarModal('${nombreLimpio}', '${descripcionLimpia}', '${imageUrl}')">
-                                    <i class="fas fa-eye me-2"></i>Vista previa
-                                </button>
-                            </div>
+                            <img src="${imageUrl}" alt="${producto.nombre}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
                         </div>
                         <div class="card-body">
                             <span class="category-badge">${producto.categoria}</span>
