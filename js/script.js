@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // 3. Unimos los productos con los nombres de sus categorías
             const productosCompletos = productos.map(producto => ({
                 ...producto,
-                categoria: mapaCategorias.get(producto.categoriaId.$oid) || 'Sin Categoría',
+                categoria: mapaCategorias.get(producto.categoriaId?.$oid || producto.categoriaId) || 'Sin Categoría',
                 imagen: producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`
             }));
 
