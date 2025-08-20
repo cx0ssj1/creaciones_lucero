@@ -74,52 +74,57 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- RENDER PRODUCTOS --- //
+    // En tu archivo 'script.js'
+
+    // --- RENDER PRODUCTOS --- //
     function renderizarProductos(filtro = 'Todos', productos = []) {
-        productosContainer.innerHTML = '';
+        // 1. Filtra los productos
         const productosFiltrados = productos.filter(p => filtro === 'Todos' || p.categoria === filtro);
 
+        // 2. Si no hay productos, muestra un mensaje
         if (productosFiltrados.length === 0) {
             productosContainer.innerHTML = '<p class="text-center col-12">No hay productos en esta categoría.</p>';
             return;
         }
 
-        productosFiltrados.forEach(producto => {
-            const cardElement = document.createElement('div');
-            cardElement.className = 'col-lg-4 col-md-6 mb-4';
-            cardElement.innerHTML = crearProductCard(producto);
-            productosContainer.appendChild(cardElement);
-        });
-    }
+        // 3. Usa .map() y .join() para generar todo el HTML
+        const productosHTML = productosFiltrados.map(producto => {
+            // Prepara los datos del producto
+            const mensaje = encodeURIComponent(`¡Hola! Estoy interesado/a en el producto: ${producto.nombre}`);
+            const whatsappLink = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${mensaje}`;
+            const imageUrl = producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`;
 
-    // --- TARJETA DE PRODUCTO --- //
-    function crearProductCard(producto) {
-        const mensaje = encodeURIComponent(`¡Hola! Estoy interesado/a en el producto: ${producto.nombre}`);
-        const whatsappLink = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${mensaje}`;
-        const imageUrl = producto.imagen || `https://placehold.co/400x400/ccc/fff?text=${encodeURIComponent(producto.nombre)}`;
+            // Escapa las comillas para evitar errores en el onclick
+            const nombreLimpio = producto.nombre.replace(/'/g, "\\'").replace(/"/g, '\\"');
+            const descripcionLimpia = producto.descripcion.replace(/'/g, "\\'").replace(/"/g, '\\"');
 
-        const nombreLimpio = producto.nombre.replace(/'/g, "\\'").replace(/"/g, '\\"');
-        const descripcionLimpia = producto.descripcion.replace(/'/g, "\\'").replace(/"/g, '\\"');
+            // Retorna la tarjeta de producto como una cadena de texto
+            return `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="product-card card-enter">
+                        <div class="product-image">
+                            <img src="${imageUrl}" alt="${producto.nombre}"
+                                onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
+                            <div class="product-overlay">
+                                <button class="preview-btn" onclick="mostrarModal('${nombreLimpio}', '${descripcionLimpia}', '${imageUrl}')">
+                                    <i class="fas fa-eye me-2"></i>Vista previa
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <span class="category-badge">${producto.categoria}</span>
+                            <h5 class="card-title">${producto.nombre}</h5>
+                            <p class="card-text">${producto.descripcion}</p>
+                            <a href="${whatsappLink}" class="btn btn-whatsapp" target="_blank">
+                                <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+        }).join(''); // Une todas las tarjetas en una sola cadena
 
-        return `
-        <div class="product-card card-enter">
-            <div class="product-image">
-                <img src="${imageUrl}" alt="${producto.nombre}"
-                     onerror="this.onerror=null;this.src='https://placehold.co/400x400/ccc/fff?text=Imagen+no+disponible';">
-                <div class="product-overlay">
-                    <button class="preview-btn" onclick="mostrarModal('${nombreLimpio}', '${descripcionLimpia}', '${imageUrl}')">
-                        <i class="fas fa-eye me-2"></i>Vista previa
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <span class="category-badge">${producto.categoria}</span>
-                <h5 class="card-title">${producto.nombre}</h5>
-                <p class="card-text">${producto.descripcion}</p>
-                <a href="${whatsappLink}" class="btn btn-whatsapp" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
-                </a>
-            </div>
-        </div>`;
+        // 4. Inserta el HTML en el contenedor
+        productosContainer.innerHTML = productosHTML;
     }
 
     // --- EFECTOS VISUALES --- //
