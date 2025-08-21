@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <span class="category-badge">${producto.categoria}</span>
                             <h5 class="card-title">${producto.nombre}</h5>
                             <p class="card-text">${producto.descripcion}</p>
+                            <p class="product-price"><strong>$${producto.precio?.toLocaleString() || '0'}</strong></p>
                             <a href="${whatsappLink}" class="btn btn-whatsapp" target="_blank">
                                 <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
                             </a>
