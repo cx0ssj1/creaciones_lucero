@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const productosCompletos = productos.map(producto => ({
                 ...producto,
                 categoria: mapaCategorias.get(producto.categoriaId?.$oid) || 'Sin Categoría',
-                imagen: producto.imagen || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`
+                imagen: producto.imagenUrl || `https://placehold.co/400x400/F7C8D6/4A4A4A?text=${encodeURIComponent(producto.nombre)}`
             }));
 
             // Generamos filtros y render inicial
